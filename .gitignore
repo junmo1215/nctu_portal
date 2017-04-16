@@ -1,2 +1,4 @@
 training/unlabeled
 training/temp_test
+training/data
+.log

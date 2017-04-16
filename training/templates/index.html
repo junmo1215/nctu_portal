@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<title>Image List</title>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+</head>
+<body>
+    <div id="statistics">
+        <label id="numOfUnlabeled">{{total}}</label><label>/{{total}}</label>
+    </div>
+{% for image in img_list %}
+    <div id="div_{{image.index}}">
+        <img src="{{url_for('static', filename=image.src)}}" />
+        <input fileName="{{image.src}}" index="{{image.index}}" class="vcode"/>
+    </div>
+{% endfor %}
+</body>
+<style>
+    #statistics{
+        position:fixed;
+        right:20%;
+        top:30px;
+        height:30px;
+        width:500PX;
+        margin-left:0PX;
+        margin-top:0PX;
+        border:1PX solid #FFF;  
+    }
+</style>
+<script type="text/javascript">
+total = {{total}};
+num = total;
+$(document).ready(function(){
+    $(".vcode").each(function(index){
+        $(this).on("blur", function(){
+            var value = $(this).val();
+            //验证码长度校验
+            if(value.length != 4)
+                return;
+
+            console.log($(this).attr("fileName") + ": " + $(this).val());
+            $.ajax({
+                url: "/label",
+                data: {
+                    "fileName": $(this).attr("fileName"),
+                    "value": value
+                }
+            });
+            num -= 1;
+            $("#numOfUnlabeled").text(num);
+        });
+        $(this).on("keypress", function(e){
+            if(e.keyCode == 13)
+                $(this).parent().next().children("input.vcode").focus();
+        });
+    })
+});
+</script>
+</html>
