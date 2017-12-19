@@ -6,7 +6,7 @@ import numpy as np
 from helper import filter_img, random_name
 
 IMAGE_FOLDER = os.path.join("data", "labeled", "0")
-OUTPUT_FOLDER = "single_letters"
+OUTPUT_FOLDER = os.path.join("single_letters", "0")
 IMAGE_SIZE = 32
 
 def main():
@@ -21,7 +21,7 @@ def main():
             im = Image.open(os.path.join(IMAGE_FOLDER, img_file))
             im = im.convert('L')
 
-            step = "filter_img_"
+            # step = "filter_img_"
             imgry = filter_img(im, 98)
             # imgry.save(os.path.join(OUTPUT_FOLDER, step + img_file), 'jpeg')
             imgs = cut_image(imgry)

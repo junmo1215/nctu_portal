@@ -4,4 +4,4 @@ training/data
 .log
 */__pycache__/
 training/single_letters/*
-
+.vscode/settings.json
