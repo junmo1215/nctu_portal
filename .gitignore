@@ -2,3 +2,6 @@ training/unlabeled
 training/temp_test
 training/data
 .log
+*/__pycache__/
+training/single_letters/*
+
