@@ -5,3 +5,5 @@ training/data
 */__pycache__/
 training/single_letters/*
 .vscode/settings.json
+training/log/*
+training/model/*

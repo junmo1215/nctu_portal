@@ -8,6 +8,7 @@ from helper import filter_img, random_name
 IMAGE_FOLDER = os.path.join("data", "labeled", "0")
 OUTPUT_FOLDER = os.path.join("single_letters", "0")
 IMAGE_SIZE = 32
+MODEL_INPUT_SIZE = (28, 28)
 
 def main():
     for i in range(10):
@@ -21,7 +22,7 @@ def main():
             im = Image.open(os.path.join(IMAGE_FOLDER, img_file))
             im = im.convert('L')
 
-            # step = "filter_img_"
+            step = "filter_img_"
             imgry = filter_img(im, 98)
             # imgry.save(os.path.join(OUTPUT_FOLDER, step + img_file), 'jpeg')
             imgs = cut_image(imgry)
@@ -30,7 +31,7 @@ def main():
                 continue
 
             for i in range(4):
-                imgs[i].save(os.path.join(OUTPUT_FOLDER, img_file[i], random_name()))
+                imgs[i].resize(MODEL_INPUT_SIZE).save(os.path.join(OUTPUT_FOLDER, img_file[i], random_name()))
 
 
 def cut_image(imgry):

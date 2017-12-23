@@ -3,6 +3,7 @@
 import os
 import uuid
 from PIL import Image
+import numpy as np
 
 def filter_img(img, threshold=170):
     '对于黑白图像，将像素值大于某一个值的部分变成白色，小于这个值的部分变成黑色'
@@ -16,4 +17,7 @@ def filter_img(img, threshold=170):
     return filtered
 
 def random_name():
-    return "{}.jpg".format(uuid.uuid4().hex)
+    return "{}.bmp".format(uuid.uuid4().hex)
+
+def image_to_numpy(img):
+    return np.array(img)

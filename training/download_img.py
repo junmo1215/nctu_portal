@@ -8,10 +8,11 @@
 
 import sys
 import os
+import uuid
 import requests
 
 # 下载图片数量
-NUM = 1
+NUM = 2
 
 HEADS = {
 "Accept": "image/webp,image/apng,image/*,*/*;q=0.8", 
@@ -37,7 +38,47 @@ def main():
         with open(os.path.join(dir_name, dir_name + str(index) + '.jpg'), 'wb') as f:
             f.write(resp.content)
 
+def download1():
+    output_dir = os.path.join("data", "labeled", "1")
+    for i in range(0, NUM):
+        # 请求页面，拿到名称
+        resp = requests.get("http://localhost:8081/simple-php-captcha-master/index.php")
+        content = resp.text
+        index = content.index("[code] =>")
+        label = content[index+10: index+14]
+        # 下载图片
+        image = requests.get("http://localhost:8081/simple-php-captcha-master/simple-php-captcha.php?_CAPTCHA&t=0.12561100+1513940509", cookies=resp.cookies)
+        with open(os.path.join(output_dir, "{}_{}.jpg".format(label, uuid.uuid4().hex)), 'wb') as f:
+            f.write(image.content)
+
+def download0():
+    php_session_id="t5c5mjj7s4ole1ukcdhslk2ch0"
+    label = "9458"
+    output_dir = os.path.join("data", "labeled", "0")
+    cookies = {
+        "PHPSESSID": php_session_id
+        # "citrix_ns_id": "OD4PrA1aKSnVl9Ta+ZURrmq8c8g0000",
+        # "_ga": "GA1.3.2113641481.1513573752",
+        # "__utmz": "156794426.1513591934.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)",
+        # "__utma": "156794426.2113641481.1513573752.1513591934.1513935996.2",
+        # "__utmc": "156794426"
+    }
+
+    # headers = {
+    #     "Connection": "keep-alive",
+	# 	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36",
+	# 	"Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+	# 	"Accept-Encoding": "gzip, deflate, br",
+	# 	"Accept-Language": "zh-CN,zh;q=0.9,zh-TW;q=0.8"
+    # }
+
+    for i in range(0, NUM):
+        image = requests.get("https://portal.nctu.edu.tw/captcha/pitctest/pic.php", cookies=cookies, verify=False)
+        with open(os.path.join(output_dir, "{}_{}.jpg".format(label, uuid.uuid4().hex)), 'wb') as f:
+            f.write(image.content)
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         NUM = int(sys.argv[1])
-    main()
+    # main()
+    download1()

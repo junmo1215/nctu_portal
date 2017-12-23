@@ -4,12 +4,10 @@ import os
 from PIL import Image
 import numpy as np
 from helper import filter_img, random_name
-import cv2
 
-IMAGE_FOLDER = os.path.join("data", "labeled", "1")
-OUTPUT_FOLDER = os.path.join("single_letters", "1")
+IMAGE_FOLDER = os.path.join("data", "labeled", "3", "test")
+OUTPUT_FOLDER = os.path.join("single_letters", "3", "test")
 IMAGE_SIZE = 50
-MODEL_INPUT_SIZE = (28, 28)
 
 def main():
     for i in range(10):
@@ -24,78 +22,37 @@ def main():
             im = im.convert('L')
 
             step = "filter_img_"
-            imgry = filter_img(im, get_number_color(im))
+            imgry = filter_img(im, 200)
             imgry.save(os.path.join(OUTPUT_FOLDER, step + img_file), 'jpeg')
             imgs = cut_image(imgry)
-            # for img in imgs:
-            #     img.save(os.path.join(OUTPUT_FOLDER, random_name()))
+            for img in imgs:
+                img.save(os.path.join(OUTPUT_FOLDER, random_name()))
             if len(imgs) != 4:
                 print("cut image warning: {}".format(img_file))
                 continue
 
             for i in range(4):
                 temp_img = resize_image(imgs[i])
-                temp_img.resize(MODEL_INPUT_SIZE).save(os.path.join(OUTPUT_FOLDER, img_file[i], random_name()))
-
-def get_number_color(img):
-    colors = img.getcolors()
-    # 数字的颜色像素点最多，所以按照像素点数量从大到小排序
-    # 结果的第一个是数字像素点的个数以及对应的颜色
-    # 排序结果类似于[(1331, 99), (653, 233), (631, 232), (626, 240)]
-    return sorted(colors, key=lambda x: x[0], reverse=True)[1][1]
-
-# def cut_image(imgry):
-#     """
-#     把图片切割成数字，图片必须是二值化之后的结果（像素值只有0或者255）
-#     返回切割后的四张图片
-#     """
-#     results = []
-
-#     img_copy = imgry.crop((1, 0, imgry.width-1, imgry.height))
-#     masks = []
-#     for x in range(img_copy.width):
-#         for y in range(img_copy.height):
-#             if img_copy.getpixel((x, y)) == 0:
-#                 img_copy, mask = get_mask(img_copy, x, y)
-#                 # 去除周围的空白，去除分割异常的情况
-#                 mask = remove_blank(mask)
-#                 if mask is not None:
-#                     masks.extend(mask)
-#     return masks
+                temp_img.save(os.path.join(OUTPUT_FOLDER, img_file[i], random_name()))
 
 def cut_image(imgry):
-    open_cv_image = np.array(imgry)
-    ret, thresh = cv2.threshold(open_cv_image, 127, 255, 0)
-    image, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = sorted([(c, cv2.boundingRect(c)[0]) for c in contours], key = lambda x:x[1])
-    ary = []
-    images = []
+    """
+    把图片切割成数字，图片必须是二值化之后的结果（像素值只有0或者255）
+    返回切割后的四张图片
+    """
+    results = []
 
-    lh = 0
-    rh = 0
-    for (c,_) in cnts:
-        (x, y, w, h) = cv2.boundingRect(c)
-        # print(x, y, w, h)
-        if h >= 12 and h <= 60:
-            # if (flag == False) and (x - flag_x < 10):
-            #     flag = True
-            #     continue
-            # if flag:
-            #     flag = False
-            #     continue
-            if x > lh and x + w < rh:
-                continue
-
-            lh = x
-            rh = x + w
-            ary.append((x, y, w, h))
-            temp = imgry.crop((x, y, x + w, y + h))
-            # temp.show()
-            images.append(temp)
-    print(len(ary))
-
-
-    return images
+    img_copy = imgry.crop((1, 0, imgry.width-1, imgry.height))
+    masks = []
+    for x in range(img_copy.width):
+        for y in range(img_copy.height):
+            if img_copy.getpixel((x, y)) == 0:
+                img_copy, mask = get_mask(img_copy, x, y)
+                # 去除周围的空白，去除分割异常的情况
+                mask = remove_blank(mask)
+                if mask is not None:
+                    masks.extend(mask)
+    return masks
 
 def resize_image(image):
     """
