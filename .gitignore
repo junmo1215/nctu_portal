@@ -7,3 +7,4 @@ training/single_letters/*
 .vscode/settings.json
 training/log/*
 training/model/*
+training/label_img.log

@@ -12,6 +12,10 @@ from flask import Flask, render_template, request
 from shutil import copyfile
 import random
 import logging
+from PIL import Image
+from io import BytesIO
+import base64
+from predict import predict
 
 app = Flask(__name__, static_folder="unlabeled", static_url_path='/unlabeled')
 
@@ -42,8 +46,20 @@ def label_img():
     app.logger.info('source_path: %s value: %s destination_path: %s' % (path, value, os.path.join('data', 'labeled', value + ".jpg")))
     return "OK"
 
+@app.route('/predict', methods=['GET', 'POST'])
+def predict_img():
+    base64str = request.form["image"]
+    if base64str.split(',')[0].find('base64') >= 0:
+        base64str = base64str.split(',')[1]
+    im = Image.open(BytesIO(base64.b64decode(base64str)))
+    result = predict(im)
+    print(result)
+    return result
+
 if __name__ == '__main__':
     handler = logging.FileHandler('label_img.log')
     app.logger.addHandler(handler)
     handler.setFormatter(logging.Formatter('%(asctime)s: %(message)s'))
-    app.run(host='0.0.0.0', debug=True)
+
+    context = ('server.crt', 'server.key')
+    app.run(host='140.113.214.183', debug=True, ssl_context=context)

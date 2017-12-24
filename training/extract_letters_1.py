@@ -65,8 +65,8 @@ def get_number_color(img):
 
 def cut_image(imgry):
     open_cv_image = np.array(imgry)
-    ret, thresh = cv2.threshold(open_cv_image, 127, 255, 0)
-    image, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # ret, thresh = cv2.threshold(open_cv_image, 127, 255, 0)
+    image, contours, hierarchy = cv2.findContours(open_cv_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     cnts = sorted([(c, cv2.boundingRect(c)[0]) for c in contours], key = lambda x:x[1])
     ary = []
     images = []
@@ -85,14 +85,17 @@ def cut_image(imgry):
             #     continue
             if x > lh and x + w < rh:
                 continue
+            # from PIL.ImageDraw import Draw
+            # draw = Draw(imgry)
+            # draw.rectangle((x, y, x + w, y + h))
 
             lh = x
             rh = x + w
-            ary.append((x, y, w, h))
+            # ary.append((x, y, w, h))
             temp = imgry.crop((x, y, x + w, y + h))
             # temp.show()
             images.append(temp)
-    print(len(ary))
+    # print(len(images))
 
 
     return images
