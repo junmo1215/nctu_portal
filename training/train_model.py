@@ -5,11 +5,12 @@ import numpy as np
 from imutils import paths
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
+import keras
 from keras import optimizers
 from keras.models import Sequential
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.layers.core import Flatten, Dense, Dropout
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, LearningRateScheduler
 from keras.preprocessing.image import ImageDataGenerator
 
 
@@ -66,40 +67,74 @@ with open(MODEL_LABELS_FILENAME, "wb") as f:
     pickle.dump(lb, f)
 
 model = Sequential()
-
-model.add(Conv2D(32, (5, 5), padding="same", input_shape=(28, 28, 1), activation="relu"))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-
-model.add(Conv2D(64, (5, 5), padding="same", activation="relu"))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-
+model.add(Conv2D(32, kernel_size=(3, 3),
+                 activation='relu',
+                 input_shape=(28, 28, 1)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
 model.add(Flatten())
-model.add(Dense(1024, activation="relu"))
+model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
-model.add(Dense(10, activation="relu"))
-adam = optimizers.Adam(lr=1e-4)
-model.compile(loss="categorical_crossentropy", optimizer=adam, metrics=["accuracy"])
+model.add(Dense(10, activation='softmax'))
 
-# set callback
-tb_cb = TensorBoard(log_dir="./log", histogram_freq=0)
+model.compile(loss=keras.losses.categorical_crossentropy,
+              optimizer=keras.optimizers.Adadelta(),
+              metrics=['accuracy'])
+
+model.fit(X_train, Y_train,
+          batch_size=128,
+          epochs=200,
+          verbose=1,
+          validation_data=(X_test, Y_test))
+score = model.evaluate(X_test, Y_test, verbose=0)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
+
+# model = Sequential()
+
+# model.add(Conv2D(32, (5, 5), padding="same", input_shape=(28, 28, 1), activation="relu"))
+# model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+# model.add(Conv2D(64, (5, 5), padding="same", activation="relu"))
+# model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+# model.add(Flatten())
+# model.add(Dense(1024, activation="relu"))
+# model.add(Dropout(0.5))
+# model.add(Dense(10, activation="relu"))
+# adam = optimizers.Adam(lr=1e-4)
+# sgd = optimizers.SGD(lr=1e-4, momentum=0.9, nesterov=True)
+# model.compile(loss="categorical_crossentropy", optimizer=sgd, metrics=["accuracy"])
+
+# def scheduler(epoch):
+#     learning_rate_init = 1e-4
+#     if epoch >= 100:
+#         learning_rate_init = 1e-5
+#     if epoch >= 200:
+#         learning_rate_init = 1e-6
+#     return learning_rate_init
+
+# # set callback
+# tb_cb = TensorBoard(log_dir="./log", histogram_freq=0)
 # change_lr = LearningRateScheduler(scheduler)
-cbks = [tb_cb]
+# cbks = [change_lr, tb_cb]
 
-# using real-time data augmentation
-datagen = ImageDataGenerator(horizontal_flip=False,
-            width_shift_range=0.05,height_shift_range=0.05,
-            fill_mode='constant',cval=0.)
-datagen.fit(X_train)
+# # using real-time data augmentation
+# datagen = ImageDataGenerator(#horizontal_flip=False,
+#             width_shift_range=0.05,height_shift_range=0.05,
+#             fill_mode='constant',cval=0.)
+# datagen.fit(X_train)
 
-# start traing 
-model.fit_generator(datagen.flow(X_train, Y_train,batch_size=128),
-                    steps_per_epoch=55,
-                    epochs=50,
-                    callbacks=cbks,
-                    validation_data=(X_test, Y_test))
+# # start traing 
+# model.fit_generator(datagen.flow(X_train, Y_train,batch_size=128),
+#                     steps_per_epoch=55,
+#                     epochs=300,
+#                     callbacks=cbks,
+#                     validation_data=(X_test, Y_test))
 
-# # Train the neural network
-# model.fit(X_train, Y_train, validation_data=(X_test, Y_test), batch_size=128, epochs=50, verbose=1, callbacks=cbks)
+# # # Train the neural network
+# # model.fit(X_train, Y_train, validation_data=(X_test, Y_test), batch_size=128, epochs=50, verbose=1, callbacks=cbks)
 
 # Save the trained model to disk
 model.save(MODEL_FILENAME)

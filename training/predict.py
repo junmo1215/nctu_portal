@@ -8,7 +8,7 @@ import argparse
 import sys
 import os
 from PIL import Image
-from helper import pretreatment0
+from helper import pretreatment0, pretreatment1
 import keras
 import pickle
 import numpy as np
@@ -19,11 +19,11 @@ LABEL = None
 
 def load_models():
     global MODELS, LABEL
-    for i in range(1):
+    for i in range(2):
         model_file = os.path.join("model", "captcha_model{}.hdf5".format(i))
         print(model_file)
         MODELS[i] = keras.models.load_model(model_file)
-    
+
     with open(MODEL_LABELS_FILE, 'rb') as f:
         LABEL = pickle.load(f)
 
@@ -40,12 +40,12 @@ def predict(image, captcha_type=-1):
         load_models()
 
     # 尝试根据type识别四种验证码
-    for t in range(4):
+    for t in range(2):
         print("INFO: trying type {} ...".format(t))
         if captcha_type in {-1, t}:
             # 图片预处理，得到分割好的四张resize之后的图片
             print("INFO: pretreatment...")
-            pretreatment_method = eval("pretreatment0")
+            pretreatment_method = eval("pretreatment{}".format(t))
             arr_image = pretreatment_method(image)
 
             if len(arr_image) == 4:

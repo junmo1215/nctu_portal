@@ -1,13 +1,14 @@
 # -*- coding: UTF-8 -*-
 
 import os
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
-from helper import filter_img, random_name
+# from helper import random_name
+from helper import filter_img, random_name, cut_image
 import cv2
 
-IMAGE_FOLDER = os.path.join("data", "labeled", "1")
-OUTPUT_FOLDER = os.path.join("single_letters", "1")
+IMAGE_FOLDER = os.path.join("data", "labeled", "1", "test")
+OUTPUT_FOLDER = os.path.join("single_letters", "1", "test")
 IMAGE_SIZE = 50
 MODEL_INPUT_SIZE = (28, 28)
 
@@ -25,7 +26,8 @@ def main():
 
             step = "filter_img_"
             imgry = filter_img(im, get_number_color(im))
-            imgry.save(os.path.join(OUTPUT_FOLDER, step + img_file), 'jpeg')
+            # imgry = filter_img(im, 230)
+            # imgry.save(os.path.join(OUTPUT_FOLDER, step + img_file), 'jpeg')
             imgs = cut_image(imgry)
             # for img in imgs:
             #     img.save(os.path.join(OUTPUT_FOLDER, random_name()))
@@ -34,8 +36,21 @@ def main():
                 continue
 
             for i in range(4):
-                temp_img = resize_image(imgs[i])
-                temp_img.resize(MODEL_INPUT_SIZE).save(os.path.join(OUTPUT_FOLDER, img_file[i], random_name()))
+                # temp_img = resize_image(imgs[i])
+                imgs[i].resize(MODEL_INPUT_SIZE).save(os.path.join(OUTPUT_FOLDER, img_file[i], random_name()))
+
+# def filter_img(img, equal_threshold=False, threshold=170):
+#     '对于黑白图像，将像素值大于某一个值的部分变成白色，小于这个值的部分变成黑色'
+#     filtered = Image.new(img.mode, img.size)
+#     for x in range(0, img.size[0]):
+#         for y in range(0, img.size[1]):
+#             if equal_threshold and img.getpixel((x, y)) == threshold:
+#                 filtered.putpixel((x, y), 255)
+#             elif (equal_threshold == False) and img.getpixel((x, y)) > threshold:
+#                 filtered.putpixel((x, y), 255)
+#             else:
+#                 filtered.putpixel((x, y), 0)
+#     return filtered
 
 def get_number_color(img):
     colors = img.getcolors()
@@ -63,42 +78,35 @@ def get_number_color(img):
 #                     masks.extend(mask)
 #     return masks
 
-def cut_image(imgry):
-    open_cv_image = np.array(imgry)
-    # ret, thresh = cv2.threshold(open_cv_image, 127, 255, 0)
-    image, contours, hierarchy = cv2.findContours(open_cv_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = sorted([(c, cv2.boundingRect(c)[0]) for c in contours], key = lambda x:x[1])
-    ary = []
-    images = []
+# from PIL.ImageDraw import Draw
+# IMAGE_PADDING = 2
+# def cut_image(imgry):
+#     open_cv_image = np.array(imgry)
+#     image, contours, hierarchy = cv2.findContours(open_cv_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#     cnts = sorted([(c, cv2.boundingRect(c)[0]) for c in contours], key = lambda x:x[1])
 
-    lh = 0
-    rh = 0
-    for (c,_) in cnts:
-        (x, y, w, h) = cv2.boundingRect(c)
-        # print(x, y, w, h)
-        if h >= 12 and h <= 60:
-            # if (flag == False) and (x - flag_x < 10):
-            #     flag = True
-            #     continue
-            # if flag:
-            #     flag = False
-            #     continue
-            if x > lh and x + w < rh:
-                continue
-            # from PIL.ImageDraw import Draw
-            # draw = Draw(imgry)
-            # draw.rectangle((x, y, x + w, y + h))
+#     images = []
+#     lh = 0
+#     rh = 0
 
-            lh = x
-            rh = x + w
-            # ary.append((x, y, w, h))
-            temp = imgry.crop((x, y, x + w, y + h))
-            # temp.show()
-            images.append(temp)
-    # print(len(images))
-
-
-    return images
+#     # draw = Draw(imgry)
+#     for (c,_) in cnts:
+#         (x, y, w, h) = cv2.boundingRect(c)
+#         # print(x, y, w, h)
+#         if 10 < h < 70:
+#             # 排除0这类的数字可能会捕捉到两个边界的情况
+#             if x > lh and x + w < rh:
+#                 continue
+#             # draw.rectangle((x, y, x + w, y + h))
+#             lh = x
+#             rh = x + w
+#             temp = imgry.crop((x-IMAGE_PADDING, y-IMAGE_PADDING, x + w + IMAGE_PADDING, y + h + IMAGE_PADDING))
+#             temp = temp.resize((IMAGE_SIZE, IMAGE_SIZE))
+#             temp = ImageOps.invert(temp)
+#             # temp.show()
+#             images.append(temp)
+#     # print(len(ary))
+#     return images
 
 def resize_image(image):
     """
