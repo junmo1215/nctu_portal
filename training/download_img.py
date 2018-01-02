@@ -77,8 +77,23 @@ def download0():
         with open(os.path.join(output_dir, "{}_{}.jpg".format(label, uuid.uuid4().hex)), 'wb') as f:
             f.write(image.content)
 
+def download2():
+    output_dir = os.path.join("data", "labeled", "2")
+    for i in range(0, NUM):
+        # 下载图片
+        image = requests.get("http://localhost:8081/securimage-master/securimage_show.php")
+        # print(resp.text)
+
+        # 获取标记
+        resp = requests.get("http://localhost:8081/securimage-master/test.php", cookies=image.cookies)
+        label = resp.text.strip()
+        # print(label)
+        with open(os.path.join(output_dir, "{}_{}.jpg".format(label, uuid.uuid4().hex)), 'wb') as f:
+            f.write(image.content)
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         NUM = int(sys.argv[1])
     # main()
-    download1()
+    # download1()
+    download2()

@@ -6,7 +6,7 @@
 
 import os
 import argparse
-from helper import pretreatment0, pretreatment1, random_name
+from helper import pretreatment0, pretreatment1, pretreatment2, random_name
 from PIL import Image
 
 IMAGE_SIZE = 32
@@ -33,7 +33,7 @@ def main():
             if len(imgs) != 4:
                 print("cut image warning: {}".format(img_file))
                 continue
-            
+
             success += 1
             for i in range(4):
                 imgs[i].save(os.path.join(OUTPUT_FOLDER, img_file[i], random_name()))

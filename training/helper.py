@@ -8,6 +8,10 @@ import cv2
 
 IMAGE_PADDING = 2
 IMAGE_SIZE = (28, 28)
+MIN_NUM_WIDTH = 10
+
+# 第二种验证码要用到的参数
+BOX_SIZE = 1
 
 def filter_img(img, threshold=170):
     '对于黑白图像，将像素值大于某一个值的部分变成黑色，小于这个值的部分变成白色'
@@ -122,3 +126,162 @@ def pretreatment1(image, is_fake_img=False):
     im = image.convert('L')
     im = filter_img(im, get_number_color(im, is_fake_img))
     return cut_image(im)
+
+def pretreatment2(image, is_fake_img=False):
+    if image.mode == "RGBA":
+        image = image.convert("RGB")
+    color = get_number_color2(image)
+    # print(image.mode)
+    # print(color)
+    if color is None:
+        return []
+    imgry = filter_img2(image, color)
+    imgry = imgry.convert('L')
+    if check_imgry(imgry) == False:
+        return []
+    return cut_image2(imgry)
+
+def check_imgry(imgry):
+    im = (np.array(imgry) / 255).astype("uint8")
+    white_dot_num = np.sum(im == 1)
+    total_num = im.shape[0] * im.shape[1]
+    # 如果白色的点占比少于 5% ，则认为是噪声而不是数字
+    return (white_dot_num / total_num) > 0.05
+
+def get_number_color2(im):
+    colors = im.getcolors()
+    if colors is None:
+        return None
+    colors = sorted(colors, key=lambda x: x[0], reverse=True)
+    im_arr = np.array(im)
+    top_n = 3
+    statistic = {}
+    for i in range(top_n):
+        statistic[i] = 0
+    # 统计每个颜色在
+    for i in range(im.width):
+        for j in range(top_n):
+            color = colors[j][1]
+            if color in im_arr[:, i]:
+                statistic[j] += 1
+    # print(statistic)
+    for index, num in statistic.items():
+        if num / im.width > 0.8:
+            continue
+        return colors[index][1]
+
+def filter_img2(img, threshold):
+    '对于黑白图像，将像素值大于某一个值的部分变成黑色，小于这个值的部分变成白色'
+    filtered = Image.new(img.mode, img.size)
+    for x in range(0, img.size[0]):
+        for y in range(0, img.size[1]):
+            if img.getpixel((x, y)) != threshold:
+                filtered.putpixel((x, y), (0, 0, 0))
+            else:
+                filtered.putpixel((x, y), (255, 255, 255))
+    return filtered
+
+def cut_image2(imgry):
+    img_arr = np.array(imgry)
+    dot_lists = np.argwhere(img_arr == 255)
+    # 检查二值化之后的图片是否全部是黑色
+    if dot_lists.shape[0] == 0:
+        return []
+    rows = dot_lists[:, 0]
+    top = rows.min()
+    bottom = rows.max()
+
+    cols = dot_lists[:, 1]
+    col_min = cols.min()
+    col_max = cols.max()
+
+    # 开始往下落小球
+    mask = np.zeros(shape=img_arr.shape)
+
+    for col in range(col_min, col_max + 1, 5):
+        position = (0, col)
+        mask = drop(img_arr, position, mask)
+
+    # 查看有哪些小球能落到底部，按照他们的轨迹作为边缘切割图片
+    bottom_line = mask[-1, :]
+    # print(bottom_line)
+    edges = np.where(bottom_line == 1)[0]
+
+    # 左右没有掉下来的话手动补上最边缘
+    if col_min + MIN_NUM_WIDTH < edges.min():
+        edges = np.insert(edges, 0, col_min)
+    if col_max - MIN_NUM_WIDTH > edges.max():
+        edges = np.append(edges, col_max)
+
+    # print(edges)
+    # 筛选隔着太近的线条
+    temp = []
+    for col in range(edges.min(), edges.max() + 1):
+        if (col in edges) and ((col + 1) not in edges):
+            temp.append(col)
+    # print(temp)
+    edges = temp
+
+    results = []
+    for i in range(len(edges) - 1):
+        left = edges[i]
+        right = edges[i + 1]
+        width = right - left
+        if width > MIN_NUM_WIDTH:
+            if width > bottom - top:
+                # box = (left, top, left + width // 2, bottom)
+                results.append(subimage(imgry, (
+                    left, top, left + width // 2, bottom)))
+                results.append(subimage(imgry, (
+                    left + width // 2, top, right, bottom)))
+            else:
+                # box = (left, top, right, bottom)
+                results.append(subimage(imgry, (
+                    left, top, right, bottom)))
+    return results
+
+def drop(img_arr, position, mask):
+    row, col = position
+    h, w = img_arr.shape
+    while row is not None and col is not None:
+
+        # 判断是否出界
+        if row >= h or col >= w or col < 0:
+            break
+
+        # 判断这个部分是否之前走过
+        if np.sum(mask[row:row+BOX_SIZE, col:col+BOX_SIZE] != 1) == 0:
+            break
+
+        mask[row:row+BOX_SIZE, col:col+BOX_SIZE] = 1
+
+        row, col = next_position(row, col, img_arr)
+
+    return mask
+
+def next_position(row, col, im_arr):
+    row += BOX_SIZE
+    box = np.zeros(shape=im_arr.shape)
+    box[row:row+BOX_SIZE, col:col+BOX_SIZE] = 1
+    if is_collision(box, im_arr) == False:
+        return row, col
+    row -= BOX_SIZE
+
+    col += BOX_SIZE
+    box = np.zeros(shape=im_arr.shape)
+    box[row:row+BOX_SIZE, col:col+BOX_SIZE] = 1
+    if is_collision(box, im_arr) == False:
+        return row, col
+    col -= BOX_SIZE
+
+    col -= BOX_SIZE
+    box = np.zeros(shape=im_arr.shape)
+    box[row:row+BOX_SIZE, col:col+BOX_SIZE] = 1
+    if is_collision(box, im_arr) == False:
+        return row, col
+    col += BOX_SIZE
+
+    return (None, None)
+
+def is_collision(box1, box2):
+    return np.sum(np.logical_and(box1, box2)) > 0
