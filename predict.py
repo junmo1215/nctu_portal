@@ -2,6 +2,11 @@
 
 """
 predict captcha in nctu portal
+
+usage: predict.py [-h] [--captcha_type CAPTCHA_TYPE] image_path
+
+e.g.
+    python predict.py data\labeled\1\6693.jpg --captcha_type=1
 """
 
 import argparse

@@ -2,6 +2,9 @@
 
 """
 将验证码图片切割成可以喂给神经网络的固定大小的四张图片
+
+e.g.
+    python extract_letters.py 0
 """
 
 import os
@@ -49,5 +52,5 @@ if __name__ == "__main__":
     IMAGE_TYPE = args.captcha_type
 
     IMAGE_FOLDER = os.path.join("data", "labeled", str(IMAGE_TYPE))
-    OUTPUT_FOLDER = os.path.join("single_letters", str(IMAGE_TYPE))
+    OUTPUT_FOLDER = os.path.join("data", "single_letters", str(IMAGE_TYPE))
     main()

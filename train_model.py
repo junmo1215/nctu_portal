@@ -1,5 +1,12 @@
 # coding = UTF8
 
+"""
+训练神经网络
+
+e.g.
+    python train_model.py 0
+"""
+
 import cv2
 import pickle
 import os.path
@@ -95,7 +102,7 @@ if __name__ == "__main__":
 
     CAPTURE_TYPE = args.captcha_type
 
-    INPUT_DATA_FOLDER = os.path.join("single_letters", "{}".format(CAPTURE_TYPE))
+    INPUT_DATA_FOLDER = os.path.join("data", "single_letters", "{}".format(CAPTURE_TYPE))
     MODEL_FILENAME = os.path.join("model", "captcha_model{}.hdf5".format(CAPTURE_TYPE))
     MODEL_LABELS_FILENAME = os.path.join("model", "model_labels{}.dat".format(CAPTURE_TYPE))
 
