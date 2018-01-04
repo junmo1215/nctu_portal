@@ -1,10 +1,7 @@
-training/unlabeled
-training/temp_test
-training/data
 .log
 */__pycache__/
-training/single_letters/*
 .vscode/settings.json
-training/log/*
-training/model/*
-training/label_img.log
+
+log/*
+model/*
+data/*
