@@ -52,7 +52,11 @@ def predict_img():
     if base64str.split(',')[0].find('base64') >= 0:
         base64str = base64str.split(',')[1]
     im = Image.open(BytesIO(base64.b64decode(base64str)))
-    result = predict(im)
+    try:
+        result = predict(im)
+    except:
+        result = "ERROR: encounter an exception"
+    
     print(result)
     return result
 

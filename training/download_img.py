@@ -52,25 +52,13 @@ def download1():
             f.write(image.content)
 
 def download0():
-    php_session_id="t5c5mjj7s4ole1ukcdhslk2ch0"
-    label = "9458"
+    # 下载之前要修改这两个值
+    php_session_id=""
+    label = "0000"
     output_dir = os.path.join("data", "labeled", "0")
     cookies = {
         "PHPSESSID": php_session_id
-        # "citrix_ns_id": "OD4PrA1aKSnVl9Ta+ZURrmq8c8g0000",
-        # "_ga": "GA1.3.2113641481.1513573752",
-        # "__utmz": "156794426.1513591934.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)",
-        # "__utma": "156794426.2113641481.1513573752.1513591934.1513935996.2",
-        # "__utmc": "156794426"
     }
-
-    # headers = {
-    #     "Connection": "keep-alive",
-	# 	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36",
-	# 	"Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
-	# 	"Accept-Encoding": "gzip, deflate, br",
-	# 	"Accept-Language": "zh-CN,zh;q=0.9,zh-TW;q=0.8"
-    # }
 
     for i in range(0, NUM):
         image = requests.get("https://portal.nctu.edu.tw/captcha/pitctest/pic.php", cookies=cookies, verify=False)
