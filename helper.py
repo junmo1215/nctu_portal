@@ -148,6 +148,28 @@ def check_imgry(imgry):
     # 如果白色的点占比少于 5% ，则认为是噪声而不是数字
     return (white_dot_num / total_num) > 0.05
 
+# def get_number_color2(im):
+#     colors = im.getcolors()
+#     if colors is None:
+#         return None
+#     colors = sorted(colors, key=lambda x: x[0], reverse=True)
+#     im_arr = np.array(im)
+#     top_n = 3
+#     statistic = {}
+#     for i in range(top_n):
+#         statistic[i] = 0
+#     # 统计每个颜色在水平方向投影 与 图片宽度的比值
+#     for i in range(im.width):
+#         for j in range(top_n):
+#             color = colors[j][1]
+#             if color in im_arr[:, i]:
+#                 statistic[j] += 1
+#     print(statistic)
+#     for index, num in statistic.items():
+#         if num / im.width > 0.8:
+#             continue
+#         return colors[index][1]
+
 def get_number_color2(im):
     colors = im.getcolors()
     if colors is None:
@@ -155,20 +177,18 @@ def get_number_color2(im):
     colors = sorted(colors, key=lambda x: x[0], reverse=True)
     im_arr = np.array(im)
     top_n = 3
-    statistic = {}
+
     for i in range(top_n):
-        statistic[i] = 0
-    # 统计每个颜色在
-    for i in range(im.width):
-        for j in range(top_n):
-            color = colors[j][1]
-            if color in im_arr[:, i]:
-                statistic[j] += 1
-    # print(statistic)
-    for index, num in statistic.items():
-        if num / im.width > 0.8:
+        color = colors[i][1]
+        temp = np.logical_and(im_arr[:, :, 0] == color[0], im_arr[:, :, 1] == color[1])
+        temp = np.logical_and(temp, im_arr[:, :, 2] == color[2])
+        dots = np.argwhere(temp)
+        x = dots[:, 1]
+        x = np.unique(x)
+        # print(len(x))
+        if len(x) / im.width > 0.85:
             continue
-        return colors[index][1]
+        return color
 
 def filter_img2(img, threshold):
     '对于黑白图像，将像素值大于某一个值的部分变成黑色，小于这个值的部分变成白色'
