@@ -173,6 +173,15 @@ function post_image(){
 - 平常接触的东西都偏向于研究，但是实际到应用阶段非常需要工程能力，刚开始数据处理的时候一点头绪都没有，都不知道图片要怎么作为input喂给神经网络。
 - 验证码现在已经有很多类型的了，比较难处理的是重叠的很多的（不确定能不能用[Hinton的Capsules](https://arxiv.org/pdf/1710.09829.pdf)来解，如果能解开的话之后做验证码可能都需要换一个思路了
 
+# 相关文章地址
+
+- [[实作]手把手教你识别验证码（一）整体架构](https://junmo1215.github.io/machine-learning/2018/01/03/practice-Recongnise_capture_1st.html)
+- [[实作]手把手教你识别验证码（二）验证码去除背景以及分割](https://junmo1215.github.io/machine-learning/2018/01/05/practice-Recongnise_capture_2nd.html)
+
+# 代码链接
+
+- [junmo1215/nctu_portal](https://github.com/junmo1215/nctu_portal)
+
 # 参考
 
 1. [tensorflow/mnist_deep.py at r1.4 · tensorflow/tensorflow](https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/examples/tutorials/mnist/mnist_deep.py)
