@@ -1,0 +1,9 @@
+flask
+keras
+sklearn
+tensorflow
+imutils
+pillow
+numpy
+opencv-python
+h5py
